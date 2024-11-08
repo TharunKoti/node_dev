@@ -1,23 +1,13 @@
 const express = require("express");
 const app = express();
 
-app.get("/admin/getAllData", (req, res) => {
-    try {
-        throw new Error("ahfgbfbijncd");
-        res.send("Admin data fetched successfully");
-        
-    } catch (error) {
-        res.status(500).send("Error in connecting to DB");
-    }
-})
+const { connectDB } = require("./config/database")
 
-// handle the errors 
-app.use('/', (err, req, res, next) => {
-    if(err) {
-        res.status(500).send('Error in connecting to DB');
-    }
+connectDB().then(() => {
+    console.log('DB cluster connected successfully');
+    app.listen(7777, () => {
+        console.log('server is running on 7777');
+    });
+}).catch((err) => {
+    console.log(err, 'DB Cluster not connected');
 })
-
-app.listen(7777, () => {
-    console.log('server is running on 7777');
-});
