@@ -1,24 +1,19 @@
-const adminAuth = (req, res, next) => {
-    const token = 'abc';
-    const isTokenAuthorized = token === 'abc';
-    if(!isTokenAuthorized) {
-        res.status(401).send('Admin is not authorized');
-    } else {
-        next();
-    }
-}
+const { User } = require("../models/user");
 
-const userAuth = (req, res, next) => {
-    const token = 'abc';
-    const isTokenAuthorized = token === 'abc';
-    if(!isTokenAuthorized) {
-        res.status(401).send('Admin is not authorized');
-    } else {
-        next();
+const userExists = async (req, res, next) => {
+    try {
+        const userEmail = req.body.emailId
+        const data = await User.exists({ emailId: userEmail});
+        if(!data) {
+            next();
+        } else {
+            res.status(401).send("User already exists with same email ID.");
+        }
+    } catch (error) {
+        res.status(400).send("Error in fetching the data: " + error.message);
     }
 }
 
 module.exports = {
-    adminAuth, 
-    userAuth
+    userExists,
 };
