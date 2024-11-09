@@ -4,17 +4,13 @@ const app = express();
 const { connectDB } = require("./config/database");
 const { User } = require("./models/user");
 
-app.post("/signup", async (erq, res) => {
+//Using a express middleware to convert JSON object to JS readable format.
+app.use(express.json());
+
+app.post("/signup", async (req, res) => {
 
     //Creating new instance of the User data to save in DB
-    const user = new User({
-        firstName: "Mahendra Singh",
-        lastName: "Dhoni",
-        emailId: "Dhoni@07.com",
-        password: "Thala for a reason",
-        age: 43,
-        gender: "male"
-    })
+    const user = new User(req.body)
 
     try {
         await user.save();
