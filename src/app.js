@@ -4,14 +4,17 @@ const app = express();
 
 const { connectDB } = require("./config/database");
 const { User } = require("./models/user");
-const { userExists } = require("./middlewares/auth");
+const { userAuth } = require("./middlewares/auth");
 const { validateSignUpData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
 //Using a express middleware to convert JSON object to JS readable format.
 app.use(express.json());
+app.use(cookieParser());
 
-app.post("/signup", userExists, async (req, res) => {
+app.post("/signup", async (req, res) => {
     try {
         //validating the data
         validateSignUpData(req)
@@ -46,6 +49,8 @@ app.post("/login", async (req, res) => {
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if(isPasswordValid) {
+            const token = await jwt.sign({_id: user._id}, 'nodejs@123');
+            res.cookie("token", token)
             res.status(200).send("Login Successful.");
         } else {
             throw new Error("Invalid Credentials.")
@@ -55,64 +60,15 @@ app.post("/login", async (req, res) => {
     }
 })
 
-//refer the mongoose.com to check for different api methods on Model.
-// FEED_API to fetch all the data from DB.
-app.get("/feed", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
     try {
-        const data = await User.find({});
-        if(!data) {
-            res.status(404).send("No data found");
-        } else {
-            res.send(data);
+        const user = req.user;
+        if(!user) {
+            throw new Error("User not found.");
         }
-    } catch (error) {
-        res.status(400).send("Error in fetching the data: " + error.message);
-    }
-})
-
-//Fetch user data based on a key.
-app.get("/user", async (req, res) => {
-    try {
-        const userEmail = req.body.emailId
-        const data = await User.find({ emailId: userEmail});
-        if(!data) {
-            res.status(404).send("User not found");
-        } else {
-            res.send(data);
-        }
-    } catch (error) {
-        res.status(400).send("Error in fetching the data: " + error.message);
-    }
-})
-
-//Delete the user from the DB.
-app.delete("/deleteUser", async (req, res) => {
-    try {
-        const userId = req.body.userId
-        const data = await User.findByIdAndDelete(userId);
-        if(!data) {
-            res.status(404).send("User does not exist");
-        } else {
-            res.send("User deleted successfully...");
-        }
-    } catch (error) {
-        res.status(400).send("Error in deleting the user data: " + error.message);
-    }
-})
-
-//Update the userdata in the DB.
-//can use the PATCH/PUT API as well check for the difference between PATCH and PUT.
-app.patch("/updateUser", async (req, res) => {
-    try {
-        const userId = req.body.userId
-        const data = await User.findByIdAndUpdate(userId, { gender: "hello"}, {runValidators: true});
-        if(!data) {
-            res.status(404).send("User does not exist");
-        } else {
-            res.send("User data updated successfully...");
-        }
-    } catch (error) {
-        res.status(400).send("Error in updating the user data: " + error.message);
+        res.send(user)
+    } catch (err) {
+        res.status(400).send(err.message);
     }
 })
 

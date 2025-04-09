@@ -1,19 +1,22 @@
 const { User } = require("../models/user");
+const jwt = require("jsonwebtoken");
 
-const userExists = async (req, res, next) => {
+const userAuth = async (req, res, next) => {
     try {
-        const userEmail = req.body.emailId
-        const data = await User.exists({ emailId: userEmail});
-        if(!data) {
-            next();
-        } else {
-            res.status(401).send("User already exists with same email ID.");
+        const { token } = req.cookies;
+        if(!token) {
+            throw new Error("Token is not valid.");
         }
-    } catch (error) {
-        res.status(400).send("Error in fetching the data: " + error.message);
+        const decodeObj = await jwt.verify(token, "nodejs@123");
+        const { _id } = decodeObj;
+        const user = await User.findById(_id);
+        req.user = user;
+        next();
+    } catch (err) {
+        res.status(400).send("ERROR:" + err.message);
     }
 }
 
 module.exports = {
-    userExists,
+    userAuth,
 };

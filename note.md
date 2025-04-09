@@ -1,3 +1,7 @@
+ - refer the mongoose.com to check for different api methods on Model.
+ - Update the userdata in the DB.
+ - can use the PATCH/PUT API as well check for the difference between PATCH and PUT.
+
  - Create a repository
  - Initialize the repository
  - node_modules, package.json, package-lock.json
