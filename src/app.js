@@ -8,7 +8,6 @@ const { userAuth } = require("./middlewares/auth");
 const { validateSignUpData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
 
 //Using a express middleware to convert JSON object to JS readable format.
 app.use(express.json());
@@ -47,10 +46,10 @@ app.post("/login", async (req, res) => {
         if(!user) {
             throw new Error("Invalid Credentials.");
         }
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await user.validatePassword(password);
         if(isPasswordValid) {
-            const token = await jwt.sign({_id: user._id}, 'nodejs@123');
-            res.cookie("token", token)
+            const token = await user.getJWT()
+            res.cookie("token", token, {expires: new Date(Date.now() + 8 * 3600000)})
             res.status(200).send("Login Successful.");
         } else {
             throw new Error("Invalid Credentials.")
