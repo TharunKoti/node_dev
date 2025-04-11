@@ -1,6 +1,8 @@
  - refer the mongoose.com to check for different api methods on Model.
  - Update the userdata in the DB.
  - can use the PATCH/PUT API as well check for the difference between PATCH and PUT.
+ - read about schema index
+ - $or query and $and query in the mongoose docs.
 
  - Create a repository
  - Initialize the repository

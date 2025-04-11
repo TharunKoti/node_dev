@@ -9,7 +9,7 @@ app.use(cookieParser());
 
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
-const requestRouter = require("./routes/requests");
+const requestRouter = require("./routes/request");
 
 //Using a express middleware to convert JSON object to JS readable format.
 app.use("/", authRouter);
