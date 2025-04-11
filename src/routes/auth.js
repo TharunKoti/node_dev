@@ -11,7 +11,7 @@ authRouter.post("/signup", async (req, res) => {
         //validating the data
         validateSignUpData(req)
 
-        const { firstName, lastName, password, emailId, photoUrl, gender, age, skills, about } = req.body
+        const { firstName, lastName, password, emailId } = req.body
         // Encrypt the password
         const passwordhash = await bcrypt.hash(password, 10);
 
@@ -50,6 +50,13 @@ authRouter.post("/login", async (req, res) => {
     } catch (err) {
         res.status(400).send(err.message);
     }
+})
+
+authRouter.post("/logout", async (req, res) => {
+    res.cookie("token", null, {
+        expires: new Date(Date.now()),
+    });
+    res.send("Logout Successfull.")
 })
 
 module.exports = authRouter;
