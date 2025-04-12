@@ -14,7 +14,7 @@ requestRouter.post(
             const toUserId = req.params.toUserId;
             const status = req.params.status;
             const allowedStatus = ["interested", "ignored"];
-            if(!allowedStatus.includes(status)) {
+            if (!allowedStatus.includes(status)) {
                 res.status(400).json({
                     message: "Invalid Status type." + status
                 })
@@ -22,19 +22,19 @@ requestRouter.post(
 
             const existingConnectionRequest = await ConnectionRequest.findOne({
                 $or: [
-                    {fromUserId, toUserId},
-                    {fromUserId: toUserId, toUserId: fromUserId}
+                    { fromUserId, toUserId },
+                    { fromUserId: toUserId, toUserId: fromUserId }
                 ]
             });
 
-            if(existingConnectionRequest) {
+            if (existingConnectionRequest) {
                 return res.status(400).json({
                     message: "Connection request already exists."
                 })
             }
 
             const userExists = User.findById(toUserId);
-            if(!userExists) {
+            if (!userExists) {
                 return res.status(400).json({
                     message: "User does not exist."
                 })
@@ -48,6 +48,43 @@ requestRouter.post(
             const data = await connectionRequest.save();
             const message = status === "interested" ? "Connection request sent Successfully." : "Profile ignored."
             res.json({ message, data });
+        } catch (err) {
+            res.status(400).send(err.message);
+        }
+    }
+);
+
+requestRouter.post(
+    "/request/review/:status/:requestId",
+    userAuth,
+    async (req, res) => { 
+        try {
+            const loggedInUser = req.user;
+            const { status, requestId } = req.params;
+            const allowedStatus = ["accepted", "rejected"];
+            if (!allowedStatus.includes(status)) {
+                return res.status(400).json({ message: "Invalid Status type." });
+            }
+            const connectionRequest = await ConnectionRequest.findOne({
+                fromUserId: requestId,
+                toUserId: loggedInUser._id,
+                status: "interested",
+            });
+            if (!connectionRequest) {
+                return res
+                    .status(400)
+                    .json({ message: "Connection request not found." });
+            }
+            connectionRequest.status = status;
+            const message =
+                status === "accepted"
+                    ? "Connection request has been accepted"
+                    : "Connection request has been rejected.";
+            const data = await connectionRequest.save();
+            res.json({
+                message,
+                data,
+            });
         } catch (err) {
             res.status(400).send(err.message);
         }
